@@ -12,7 +12,8 @@
     playlists: [],
     editId: '',
     selectedType: 'xtream',
-    deleteId: ''
+    deleteId: '',
+    pinId: ''
   };
 
   function el(id) { return document.getElementById(id); }
@@ -34,6 +35,7 @@
     dashboardMessage: el('dashboardMessage'),
     dashboardError: el('dashboardError'),
     addPlaylistButton: el('addPlaylistButton'),
+    refreshPlaylistsButton: el('refreshPlaylistsButton'),
     emptyAddButton: el('emptyAddButton'),
     playlistModal: el('playlistModal'),
     closePlaylistModal: el('closePlaylistModal'),
@@ -55,10 +57,25 @@
     stalkerPortalUrl: el('stalkerPortalUrl'),
     stalkerMac: el('stalkerMac'),
     generateStalkerMac: el('generateStalkerMac'),
+    playlistPin: el('playlistPin'),
+    playlistPinLabel: el('playlistPinLabel'),
+    playlistPinHelp: el('playlistPinHelp'),
     deleteModal: el('deleteModal'),
     deleteText: el('deleteText'),
+    deletePin: el('deletePin'),
+    deleteError: el('deleteError'),
     cancelDeleteButton: el('cancelDeleteButton'),
-    confirmDeleteButton: el('confirmDeleteButton')
+    confirmDeleteButton: el('confirmDeleteButton'),
+    pinModal: el('pinModal'),
+    pinTitle: el('pinTitle'),
+    pinText: el('pinText'),
+    currentPinField: el('currentPinField'),
+    currentPin: el('currentPin'),
+    newPin: el('newPin'),
+    confirmNewPin: el('confirmNewPin'),
+    pinError: el('pinError'),
+    cancelPinButton: el('cancelPinButton'),
+    savePinButton: el('savePinButton')
   };
 
   function show(node) { node.classList.remove('hidden'); }
@@ -122,7 +139,11 @@
       invalid_stalker_fields: 'Enter a valid Portal URL and MAC Address.',
       playlist_not_found: 'The playlist could not be found.',
       web_manager_not_ready: 'Web Manager is temporarily unavailable.',
-      web_manager_master_key_missing: 'Web Manager encryption is not available.'
+      web_manager_master_key_missing: 'Web Manager encryption is not available.',
+      invalid_playlist_pin: 'Enter the correct 4-digit Web PIN.',
+      playlist_pin_not_set: 'Set a Web PIN for this playlist first.',
+      playlist_pin_hash_failed: 'Could not protect the playlist PIN.',
+      playlist_pin_verify_failed: 'Could not verify the playlist PIN.'
     };
     return map[code] || 'Something went wrong. Please try again.';
   }
@@ -258,11 +279,13 @@
     });
   }
 
-  function loadPlaylists() {
-    hide(ui.emptyState);
-    ui.playlistGrid.textContent = '';
-    show(ui.loadingState);
-    setMessage(ui.dashboardError, '');
+  function loadPlaylists(silent) {
+    if (!silent) {
+      hide(ui.emptyState);
+      ui.playlistGrid.textContent = '';
+      show(ui.loadingState);
+      setMessage(ui.dashboardError, '');
+    }
 
     return api('/web/playlists').then(function (data) {
       state.revision = Number(data.revision || 0);
@@ -271,7 +294,7 @@
     }).catch(function (err) {
       handleRequestError(err, ui.dashboardError);
     }).finally(function () {
-      hide(ui.loadingState);
+      if (!silent) hide(ui.loadingState);
     });
   }
 
@@ -320,6 +343,7 @@
       var title = document.createElement('h2');
       var actions = document.createElement('div');
       var edit = document.createElement('button');
+      var pin = document.createElement('button');
       var remove = document.createElement('button');
       var details = document.createElement('div');
 
@@ -337,11 +361,16 @@
       edit.type = 'button';
       edit.textContent = 'Edit';
       edit.addEventListener('click', function () { openEdit(playlist.id); });
+      pin.className = 'card-button';
+      pin.type = 'button';
+      pin.textContent = playlist.pinSet ? 'Change PIN' : 'Set PIN';
+      pin.addEventListener('click', function () { openPin(playlist.id); });
       remove.className = 'card-button danger';
       remove.type = 'button';
       remove.textContent = 'Delete';
       remove.addEventListener('click', function () { openDelete(playlist.id); });
       actions.appendChild(edit);
+      actions.appendChild(pin);
       actions.appendChild(remove);
       head.appendChild(titleArea);
       head.appendChild(actions);
@@ -358,6 +387,7 @@
         addDetail(details, 'Portal', playlist.portalUrl, false);
         addDetail(details, 'MAC', playlist.macAddress, false);
       }
+      addDetail(details, 'Web PIN', playlist.pinSet ? 'Protected' : 'Not set', false);
 
       card.appendChild(head);
       card.appendChild(details);
@@ -389,6 +419,7 @@
     ui.m3uEpgUrl.value = '';
     ui.stalkerPortalUrl.value = '';
     ui.stalkerMac.value = '';
+    ui.playlistPin.value = '';
     setMessage(ui.playlistFormError, '');
   }
 
@@ -399,6 +430,8 @@
     ui.playlistModalEyebrow.textContent = 'ADD PLAYLIST';
     ui.playlistModalTitle.textContent = 'Add playlist';
     ui.savePlaylistButton.textContent = 'Save playlist';
+    ui.playlistPinLabel.innerHTML = 'Web PIN <small>4 digits</small>';
+    ui.playlistPinHelp.textContent = 'Choose a 4-digit PIN. It protects Edit and Delete on the web and is separate from your Device Key.';
     show(ui.playlistModal);
     setTimeout(function () { ui.playlistName.focus(); }, 30);
   }
@@ -415,12 +448,18 @@
   function openEdit(id) {
     var playlist = findPlaylist(id);
     if (!playlist) return;
+    if (!playlist.pinSet) {
+      openPin(id);
+      return;
+    }
     state.editId = id;
     clearPlaylistForm();
     setType(playlist.type);
     ui.playlistModalEyebrow.textContent = 'EDIT PLAYLIST';
     ui.playlistModalTitle.textContent = 'Edit playlist';
     ui.savePlaylistButton.textContent = 'Save changes';
+    ui.playlistPinLabel.innerHTML = 'Web PIN <small>required to save</small>';
+    ui.playlistPinHelp.textContent = 'Enter this playlist\'s 4-digit Web PIN to authorize the change.';
     ui.playlistName.value = playlist.name || '';
     if (playlist.type === 'xtream') {
       ui.xtreamServerUrl.value = playlist.serverUrl || '';
@@ -469,6 +508,13 @@
         throw new Error('Enter a valid Portal URL and MAC Address.');
       }
     }
+
+    payload.pin = String(ui.playlistPin.value || '').replace(/\D/g, '').slice(0, 4);
+    ui.playlistPin.value = payload.pin;
+    if (!/^\d{4}$/.test(payload.pin)) {
+      throw new Error(state.editId ? 'Enter this playlist\'s 4-digit Web PIN.' : 'Choose a 4-digit Web PIN.');
+    }
+
     return payload;
   }
 
@@ -501,45 +547,148 @@
   function openDelete(id) {
     var playlist = findPlaylist(id);
     if (!playlist) return;
+    if (!playlist.pinSet) {
+      openPin(id);
+      return;
+    }
     state.deleteId = id;
-    ui.deleteText.textContent = 'Delete “' + (playlist.name || 'this playlist') + '” from Web Manager?';
+    ui.deletePin.value = '';
+    setMessage(ui.deleteError, '');
+    ui.deleteText.textContent = 'Delete “' + (playlist.name || 'this playlist') + '” from Web Manager and the synced PlaySat app?';
     show(ui.deleteModal);
+    setTimeout(function () { ui.deletePin.focus(); }, 30);
   }
 
   function closeDelete() {
     state.deleteId = '';
+    ui.deletePin.value = '';
+    setMessage(ui.deleteError, '');
     hide(ui.deleteModal);
   }
 
   function confirmDelete() {
     if (!state.deleteId) return;
     var id = state.deleteId;
+    var pin = String(ui.deletePin.value || '').replace(/\D/g, '').slice(0, 4);
+    ui.deletePin.value = pin;
+    setMessage(ui.deleteError, '');
+
+    if (!/^\d{4}$/.test(pin)) {
+      setMessage(ui.deleteError, 'Enter the 4-digit Web PIN.');
+      return;
+    }
+
     ui.confirmDeleteButton.disabled = true;
     ui.confirmDeleteButton.textContent = 'Deleting…';
 
-    api('/web/playlists/' + encodeURIComponent(id), { method: 'DELETE' }).then(function () {
+    api('/web/playlists/' + encodeURIComponent(id), {
+      method: 'DELETE',
+      body: JSON.stringify({ pin: pin })
+    }).then(function () {
       closeDelete();
-      setMessage(ui.dashboardMessage, 'Playlist deleted.');
+      setMessage(ui.dashboardMessage, 'Playlist deleted. PlaySat will remove it on the next sync.');
       setTimeout(function () { setMessage(ui.dashboardMessage, ''); }, 3500);
       return loadPlaylists();
     }).catch(function (err) {
-      closeDelete();
-      handleRequestError(err, ui.dashboardError);
+      handleRequestError(err, ui.deleteError);
     }).finally(function () {
       ui.confirmDeleteButton.disabled = false;
       ui.confirmDeleteButton.textContent = 'Delete';
     });
   }
 
+  function openPin(id) {
+    var playlist = findPlaylist(id);
+    if (!playlist) return;
+    state.pinId = id;
+    ui.currentPin.value = '';
+    ui.newPin.value = '';
+    ui.confirmNewPin.value = '';
+    setMessage(ui.pinError, '');
+
+    if (playlist.pinSet) {
+      ui.pinTitle.textContent = 'Change Web PIN';
+      ui.pinText.textContent = 'Enter the current PIN, then choose a new 4-digit PIN.';
+      show(ui.currentPinField);
+    } else {
+      ui.pinTitle.textContent = 'Set Web PIN';
+      ui.pinText.textContent = 'Choose a 4-digit PIN for “' + (playlist.name || 'this playlist') + '”.';
+      hide(ui.currentPinField);
+    }
+    show(ui.pinModal);
+    setTimeout(function () {
+      (playlist.pinSet ? ui.currentPin : ui.newPin).focus();
+    }, 30);
+  }
+
+  function closePin() {
+    state.pinId = '';
+    ui.currentPin.value = '';
+    ui.newPin.value = '';
+    ui.confirmNewPin.value = '';
+    setMessage(ui.pinError, '');
+    hide(ui.pinModal);
+  }
+
+  function savePin() {
+    var playlist = findPlaylist(state.pinId);
+    if (!playlist) return;
+
+    var currentPin = String(ui.currentPin.value || '').replace(/\D/g, '').slice(0, 4);
+    var newPin = String(ui.newPin.value || '').replace(/\D/g, '').slice(0, 4);
+    var confirmPin = String(ui.confirmNewPin.value || '').replace(/\D/g, '').slice(0, 4);
+    ui.currentPin.value = currentPin;
+    ui.newPin.value = newPin;
+    ui.confirmNewPin.value = confirmPin;
+    setMessage(ui.pinError, '');
+
+    if (playlist.pinSet && !/^\d{4}$/.test(currentPin)) {
+      setMessage(ui.pinError, 'Enter the current 4-digit Web PIN.');
+      return;
+    }
+    if (!/^\d{4}$/.test(newPin)) {
+      setMessage(ui.pinError, 'Choose a 4-digit Web PIN.');
+      return;
+    }
+    if (newPin !== confirmPin) {
+      setMessage(ui.pinError, 'The new PIN values do not match.');
+      return;
+    }
+
+    ui.savePinButton.disabled = true;
+    ui.savePinButton.textContent = 'Saving…';
+
+    api('/web/playlists/' + encodeURIComponent(playlist.id) + '/pin', {
+      method: 'POST',
+      body: JSON.stringify({
+        currentPin: playlist.pinSet ? currentPin : '',
+        newPin: newPin
+      })
+    }).then(function () {
+      closePin();
+      setMessage(ui.dashboardMessage, 'Web PIN saved.');
+      setTimeout(function () { setMessage(ui.dashboardMessage, ''); }, 3500);
+      return loadPlaylists();
+    }).catch(function (err) {
+      handleRequestError(err, ui.pinError);
+    }).finally(function () {
+      ui.savePinButton.disabled = false;
+      ui.savePinButton.textContent = 'Save PIN';
+    });
+  }
+
   ui.loginForm.addEventListener('submit', login);
   ui.logoutButton.addEventListener('click', logout);
   ui.addPlaylistButton.addEventListener('click', openAdd);
+  ui.refreshPlaylistsButton.addEventListener('click', function () { loadPlaylists(false); });
   ui.emptyAddButton.addEventListener('click', openAdd);
   ui.closePlaylistModal.addEventListener('click', closePlaylistModal);
   ui.cancelPlaylistButton.addEventListener('click', closePlaylistModal);
   ui.playlistForm.addEventListener('submit', savePlaylist);
   ui.cancelDeleteButton.addEventListener('click', closeDelete);
   ui.confirmDeleteButton.addEventListener('click', confirmDelete);
+  ui.cancelPinButton.addEventListener('click', closePin);
+  ui.savePinButton.addEventListener('click', savePin);
 
   ui.toggleDeviceKey.addEventListener('click', function () {
     var showKey = ui.deviceKey.type === 'password';
@@ -551,6 +700,11 @@
   ui.deviceId.addEventListener('input', function () { ui.deviceId.value = normalizeDeviceId(ui.deviceId.value); });
   ui.deviceKey.addEventListener('input', function () { ui.deviceKey.value = normalizeDeviceKey(ui.deviceKey.value); });
   ui.stalkerMac.addEventListener('input', function () { ui.stalkerMac.value = normalizeMac(ui.stalkerMac.value); });
+  [ui.playlistPin, ui.deletePin, ui.currentPin, ui.newPin, ui.confirmNewPin].forEach(function (input) {
+    input.addEventListener('input', function () {
+      input.value = String(input.value || '').replace(/\D/g, '').slice(0, 4);
+    });
+  });
   ui.generateStalkerMac.addEventListener('click', function () { ui.stalkerMac.value = generateStalkerMac(); });
 
   Array.prototype.forEach.call(document.querySelectorAll('.type-button'), function (button) {
@@ -559,12 +713,25 @@
 
   ui.playlistModal.addEventListener('click', function (event) { if (event.target === ui.playlistModal) closePlaylistModal(); });
   ui.deleteModal.addEventListener('click', function (event) { if (event.target === ui.deleteModal) closeDelete(); });
+  ui.pinModal.addEventListener('click', function (event) { if (event.target === ui.pinModal) closePin(); });
   document.addEventListener('keydown', function (event) {
     if (event.key === 'Escape') {
-      if (!ui.deleteModal.classList.contains('hidden')) closeDelete();
+      if (!ui.pinModal.classList.contains('hidden')) closePin();
+      else if (!ui.deleteModal.classList.contains('hidden')) closeDelete();
       else if (!ui.playlistModal.classList.contains('hidden')) closePlaylistModal();
     }
   });
+
+  window.setInterval(function () {
+    if (state.token &&
+        ui.dashboardView &&
+        !ui.dashboardView.classList.contains('hidden') &&
+        ui.playlistModal.classList.contains('hidden') &&
+        ui.deleteModal.classList.contains('hidden') &&
+        ui.pinModal.classList.contains('hidden')) {
+      loadPlaylists(true);
+    }
+  }, 10000);
 
   restoreSession();
   if (state.token && state.deviceId) {
