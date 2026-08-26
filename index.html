@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#050713">
+  <meta name="robots" content="noindex,nofollow">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self' https://proxy.playsattv.com; base-uri 'self'; form-action 'self'; frame-ancestors 'none';">
+  <title>PlaySat TV — Manage Playlists</title>
+  <link rel="icon" type="image/png" href="assets/playsat-logo.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="page-bg" aria-hidden="true"></div>
+  <div class="page-vignette" aria-hidden="true"></div>
+
+  <main class="shell">
+    <header class="topbar">
+      <a class="brand" href="#" id="brandHome" aria-label="PlaySat TV Manage Playlists">
+        <img class="brand-logo" src="assets/playsat-logo.png" alt="PlaySat TV">
+        <span class="brand-copy">
+          <strong>PlaySat TV</strong>
+          <span>Manage Playlists</span>
+        </span>
+      </a>
+      <button class="ghost-button hidden" id="logoutButton" type="button">Log out</button>
+    </header>
+
+    <section id="loginView" class="view login-view" aria-labelledby="loginTitle">
+      <div class="login-card glass-card">
+        <div class="eyebrow">PLAYLIST MANAGEMENT</div>
+        <h1 id="loginTitle">Manage your own playlists</h1>
+        <p class="lead">Connect to your PlaySat TV device with the Device ID and Device Key shown in the app.</p>
+
+        <form id="loginForm" novalidate>
+          <label class="field">
+            <span>Device ID</span>
+            <input id="deviceId" name="deviceId" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="17" placeholder="92:14:2B:6E:9B:58" required>
+          </label>
+
+          <label class="field">
+            <span>Device Key</span>
+            <span class="password-wrap">
+              <input id="deviceKey" name="deviceKey" type="password" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="8" placeholder="8 characters" required>
+              <button id="toggleDeviceKey" class="text-button password-toggle" type="button" aria-label="Show Device Key">Show</button>
+            </span>
+          </label>
+
+          <div id="loginError" class="message error-message hidden" role="alert"></div>
+          <button id="loginButton" class="primary-button wide" type="submit">Connect to device</button>
+        </form>
+
+        <div class="info-panel">
+          <strong>PlaySat TV is a media player.</strong>
+          <p>Use this page only to add and manage your own Xtream Codes, M3U or Stalker Portal playlist details for your PlaySat TV device.</p>
+          <p>PlaySat does not provide, sell or distribute IPTV subscriptions, playlists, channels or media content.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="dashboardView" class="view dashboard-view hidden" aria-labelledby="dashboardTitle">
+      <div class="dashboard-head">
+        <div>
+          <div class="eyebrow">CONNECTED DEVICE</div>
+          <h1 id="dashboardTitle">Your playlists</h1>
+          <div class="device-chip" id="connectedDeviceId"></div>
+        </div>
+        <button id="addPlaylistButton" class="primary-button" type="button">+ Add playlist</button>
+      </div>
+
+      <div id="dashboardMessage" class="message success-message hidden" role="status"></div>
+      <div id="dashboardError" class="message error-message hidden" role="alert"></div>
+
+      <div id="loadingState" class="state-card glass-card hidden">
+        <div class="spinner" aria-hidden="true"></div>
+        <p>Loading playlists…</p>
+      </div>
+
+      <div id="emptyState" class="state-card glass-card hidden">
+        <div class="empty-icon">＋</div>
+        <h2>No playlists added yet</h2>
+        <p>Add your own Xtream Codes, M3U or Stalker Portal details. They will be ready for PlaySat TV device sync.</p>
+        <button id="emptyAddButton" class="secondary-button" type="button">Add your first playlist</button>
+      </div>
+
+      <div id="playlistGrid" class="playlist-grid" aria-live="polite"></div>
+
+      <div class="policy-strip glass-card">
+        <strong>Your playlists. Your provider. Your device.</strong>
+        <span>PlaySat only transfers playlist information entered by you to your own PlaySat TV device.</span>
+      </div>
+    </section>
+  </main>
+
+  <div id="playlistModal" class="modal-backdrop hidden" role="presentation">
+    <section class="modal-card glass-card" role="dialog" aria-modal="true" aria-labelledby="playlistModalTitle">
+      <div class="modal-head">
+        <div>
+          <div class="eyebrow" id="playlistModalEyebrow">ADD PLAYLIST</div>
+          <h2 id="playlistModalTitle">Add playlist</h2>
+        </div>
+        <button id="closePlaylistModal" class="icon-button" type="button" aria-label="Close">×</button>
+      </div>
+
+      <div class="type-selector" role="tablist" aria-label="Playlist type">
+        <button type="button" class="type-button active" data-type="xtream" role="tab">Xtream Codes</button>
+        <button type="button" class="type-button" data-type="m3u" role="tab">M3U</button>
+        <button type="button" class="type-button" data-type="stalker" role="tab">Stalker Portal</button>
+      </div>
+
+      <form id="playlistForm" novalidate>
+        <label class="field">
+          <span>Playlist name</span>
+          <input id="playlistName" type="text" maxlength="120" autocomplete="off" placeholder="My Playlist" required>
+        </label>
+
+        <div id="xtreamFields" class="provider-fields">
+          <label class="field">
+            <span>Server URL</span>
+            <input id="xtreamServerUrl" type="url" maxlength="4096" autocomplete="off" placeholder="http://provider.example:8080" required>
+          </label>
+          <div class="two-column">
+            <label class="field">
+              <span>Username</span>
+              <input id="xtreamUsername" type="text" maxlength="1024" autocomplete="off" spellcheck="false">
+            </label>
+            <label class="field">
+              <span>Password</span>
+              <input id="xtreamPassword" type="password" maxlength="1024" autocomplete="off" spellcheck="false">
+            </label>
+          </div>
+        </div>
+
+        <div id="m3uFields" class="provider-fields hidden">
+          <label class="field">
+            <span>M3U URL</span>
+            <input id="m3uUrl" type="url" maxlength="4096" autocomplete="off" spellcheck="false" placeholder="https://provider.example/playlist.m3u">
+          </label>
+          <label class="field">
+            <span>EPG URL <small>optional</small></span>
+            <input id="m3uEpgUrl" type="url" maxlength="4096" autocomplete="off" spellcheck="false" placeholder="https://provider.example/epg.xml">
+          </label>
+        </div>
+
+        <div id="stalkerFields" class="provider-fields hidden">
+          <label class="field">
+            <span>Portal URL</span>
+            <input id="stalkerPortalUrl" type="url" maxlength="4096" autocomplete="off" spellcheck="false" placeholder="http://provider.example:8080/c">
+          </label>
+          <label class="field">
+            <span>MAC Address</span>
+            <span class="inline-input-actions">
+              <input id="stalkerMac" type="text" maxlength="17" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="00:1A:79:XX:XX:XX">
+              <button id="generateStalkerMac" class="secondary-button compact" type="button">Generate</button>
+            </span>
+          </label>
+          <p class="field-help">Use the MAC registered with your own Stalker provider. A generated MAC remains part of this playlist after it is saved.</p>
+        </div>
+
+        <div id="playlistFormError" class="message error-message hidden" role="alert"></div>
+        <div class="modal-actions">
+          <button id="cancelPlaylistButton" class="ghost-button" type="button">Cancel</button>
+          <button id="savePlaylistButton" class="primary-button" type="submit">Save playlist</button>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <div id="deleteModal" class="modal-backdrop hidden" role="presentation">
+    <section class="confirm-card glass-card" role="dialog" aria-modal="true" aria-labelledby="deleteTitle">
+      <div class="danger-dot">!</div>
+      <h2 id="deleteTitle">Delete playlist?</h2>
+      <p id="deleteText">This removes the playlist from Web Manager.</p>
+      <div class="modal-actions centered">
+        <button id="cancelDeleteButton" class="ghost-button" type="button">Cancel</button>
+        <button id="confirmDeleteButton" class="danger-button" type="button">Delete</button>
+      </div>
+    </section>
+  </div>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
