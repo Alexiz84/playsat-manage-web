@@ -65,7 +65,10 @@
           <h1 id="dashboardTitle">Your playlists</h1>
           <div class="device-chip" id="connectedDeviceId"></div>
         </div>
-        <button id="addPlaylistButton" class="primary-button" type="button">+ Add playlist</button>
+        <div class="dashboard-actions">
+          <button id="refreshPlaylistsButton" class="ghost-button" type="button">↻ Refresh</button>
+          <button id="addPlaylistButton" class="primary-button" type="button">+ Add playlist</button>
+        </div>
       </div>
 
       <div id="dashboardMessage" class="message success-message hidden" role="status"></div>
@@ -157,6 +160,12 @@
           <p class="field-help">Use the MAC registered with your own Stalker provider. A generated MAC remains part of this playlist after it is saved.</p>
         </div>
 
+        <label class="field pin-field">
+          <span id="playlistPinLabel">Web PIN <small>4 digits</small></span>
+          <input id="playlistPin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" placeholder="••••" required>
+        </label>
+        <p class="field-help" id="playlistPinHelp">This PIN protects Edit and Delete on the web. It is separate from your Device Key.</p>
+
         <div id="playlistFormError" class="message error-message hidden" role="alert"></div>
         <div class="modal-actions">
           <button id="cancelPlaylistButton" class="ghost-button" type="button">Cancel</button>
@@ -170,10 +179,41 @@
     <section class="confirm-card glass-card" role="dialog" aria-modal="true" aria-labelledby="deleteTitle">
       <div class="danger-dot">!</div>
       <h2 id="deleteTitle">Delete playlist?</h2>
-      <p id="deleteText">This removes the playlist from Web Manager.</p>
+      <p id="deleteText">This removes the playlist from Web Manager and from the synced PlaySat app.</p>
+      <label class="field">
+        <span>Web PIN</span>
+        <input id="deletePin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" placeholder="4 digits">
+      </label>
+      <div id="deleteError" class="message error-message hidden" role="alert"></div>
       <div class="modal-actions centered">
         <button id="cancelDeleteButton" class="ghost-button" type="button">Cancel</button>
         <button id="confirmDeleteButton" class="danger-button" type="button">Delete</button>
+      </div>
+    </section>
+  </div>
+
+
+  <div id="pinModal" class="modal-backdrop hidden" role="presentation">
+    <section class="confirm-card glass-card" role="dialog" aria-modal="true" aria-labelledby="pinTitle">
+      <div class="eyebrow">WEB PROTECTION</div>
+      <h2 id="pinTitle">Set Web PIN</h2>
+      <p id="pinText">Choose a 4-digit PIN for this playlist.</p>
+      <label id="currentPinField" class="field hidden">
+        <span>Current PIN</span>
+        <input id="currentPin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" placeholder="••••">
+      </label>
+      <label class="field">
+        <span>New PIN</span>
+        <input id="newPin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" placeholder="••••">
+      </label>
+      <label class="field">
+        <span>Confirm new PIN</span>
+        <input id="confirmNewPin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" placeholder="••••">
+      </label>
+      <div id="pinError" class="message error-message hidden" role="alert"></div>
+      <div class="modal-actions centered">
+        <button id="cancelPinButton" class="ghost-button" type="button">Cancel</button>
+        <button id="savePinButton" class="primary-button" type="button">Save PIN</button>
       </div>
     </section>
   </div>
