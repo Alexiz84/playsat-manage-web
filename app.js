@@ -13,7 +13,9 @@
     editId: '',
     selectedType: 'xtream',
     deleteId: '',
-    pinId: ''
+    pinId: '',
+    unlockEditId: '',
+    editPin: ''
   };
 
   function el(id) { return document.getElementById(id); }
@@ -58,6 +60,7 @@
     stalkerMac: el('stalkerMac'),
     generateStalkerMac: el('generateStalkerMac'),
     playlistPin: el('playlistPin'),
+    playlistPinField: el('playlistPinField'),
     playlistPinLabel: el('playlistPinLabel'),
     playlistPinHelp: el('playlistPinHelp'),
     deleteModal: el('deleteModal'),
@@ -66,6 +69,11 @@
     deleteError: el('deleteError'),
     cancelDeleteButton: el('cancelDeleteButton'),
     confirmDeleteButton: el('confirmDeleteButton'),
+    editUnlockModal: el('editUnlockModal'),
+    editUnlockPin: el('editUnlockPin'),
+    editUnlockError: el('editUnlockError'),
+    cancelEditUnlockButton: el('cancelEditUnlockButton'),
+    confirmEditUnlockButton: el('confirmEditUnlockButton'),
     pinModal: el('pinModal'),
     pinTitle: el('pinTitle'),
     pinText: el('pinText'),
@@ -376,7 +384,9 @@
       head.appendChild(actions);
 
       details.className = 'detail-list';
-      if (playlist.type === 'xtream') {
+      if (playlist.pinSet) {
+        addDetail(details, 'Details', 'Protected by Web PIN', false);
+      } else if (playlist.type === 'xtream') {
         addDetail(details, 'Server', playlist.serverUrl, false);
         addDetail(details, 'Username', playlist.username, false);
         addDetail(details, 'Password', playlist.password, true);
@@ -425,6 +435,7 @@
 
   function openAdd() {
     state.editId = '';
+    state.editPin = '';
     clearPlaylistForm();
     setType('xtream');
     ui.playlistModalEyebrow.textContent = 'ADD PLAYLIST';
@@ -432,6 +443,7 @@
     ui.savePlaylistButton.textContent = 'Save playlist';
     ui.playlistPinLabel.innerHTML = 'Web PIN <small>4 digits</small>';
     ui.playlistPinHelp.textContent = 'Choose a 4-digit PIN. It protects Edit and Delete on the web and is separate from your Device Key.';
+    show(ui.playlistPinField);
     show(ui.playlistModal);
     setTimeout(function () { ui.playlistName.focus(); }, 30);
   }
@@ -452,14 +464,58 @@
       openPin(id);
       return;
     }
-    state.editId = id;
+    state.unlockEditId = id;
+    ui.editUnlockPin.value = '';
+    setMessage(ui.editUnlockError, '');
+    show(ui.editUnlockModal);
+    setTimeout(function () { ui.editUnlockPin.focus(); }, 30);
+  }
+
+  function closeEditUnlock() {
+    state.unlockEditId = '';
+    ui.editUnlockPin.value = '';
+    setMessage(ui.editUnlockError, '');
+    hide(ui.editUnlockModal);
+  }
+
+  function confirmEditUnlock() {
+    var id = state.unlockEditId;
+    if (!id) return;
+    var pin = String(ui.editUnlockPin.value || '').replace(/\D/g, '').slice(0, 4);
+    ui.editUnlockPin.value = pin;
+    setMessage(ui.editUnlockError, '');
+    if (!/^\d{4}$/.test(pin)) {
+      setMessage(ui.editUnlockError, 'Enter the 4-digit Web PIN.');
+      return;
+    }
+
+    ui.confirmEditUnlockButton.disabled = true;
+    ui.confirmEditUnlockButton.textContent = 'Checking…';
+    api('/web/playlists/' + encodeURIComponent(id) + '/reveal', {
+      method: 'POST',
+      body: JSON.stringify({ pin: pin })
+    }).then(function (data) {
+      var playlist = data.playlist;
+      closeEditUnlock();
+      openEditUnlocked(playlist, pin);
+    }).catch(function (err) {
+      handleRequestError(err, ui.editUnlockError);
+    }).finally(function () {
+      ui.confirmEditUnlockButton.disabled = false;
+      ui.confirmEditUnlockButton.textContent = 'Unlock';
+    });
+  }
+
+  function openEditUnlocked(playlist, pin) {
+    if (!playlist) return;
+    state.editId = playlist.id;
+    state.editPin = pin;
     clearPlaylistForm();
     setType(playlist.type);
     ui.playlistModalEyebrow.textContent = 'EDIT PLAYLIST';
     ui.playlistModalTitle.textContent = 'Edit playlist';
     ui.savePlaylistButton.textContent = 'Save changes';
-    ui.playlistPinLabel.innerHTML = 'Web PIN <small>required to save</small>';
-    ui.playlistPinHelp.textContent = 'Enter this playlist\'s 4-digit Web PIN to authorize the change.';
+    hide(ui.playlistPinField);
     ui.playlistName.value = playlist.name || '';
     if (playlist.type === 'xtream') {
       ui.xtreamServerUrl.value = playlist.serverUrl || '';
@@ -478,6 +534,8 @@
 
   function closePlaylistModal() {
     hide(ui.playlistModal);
+    state.editPin = '';
+    show(ui.playlistPinField);
     setMessage(ui.playlistFormError, '');
   }
 
@@ -509,10 +567,10 @@
       }
     }
 
-    payload.pin = String(ui.playlistPin.value || '').replace(/\D/g, '').slice(0, 4);
-    ui.playlistPin.value = payload.pin;
+    payload.pin = state.editId ? state.editPin : String(ui.playlistPin.value || '').replace(/\D/g, '').slice(0, 4);
+    if (!state.editId) ui.playlistPin.value = payload.pin;
     if (!/^\d{4}$/.test(payload.pin)) {
-      throw new Error(state.editId ? 'Enter this playlist\'s 4-digit Web PIN.' : 'Choose a 4-digit Web PIN.');
+      throw new Error(state.editId ? 'Unlock the playlist with its Web PIN before editing.' : 'Choose a 4-digit Web PIN.');
     }
 
     return payload;
@@ -687,6 +745,8 @@
   ui.playlistForm.addEventListener('submit', savePlaylist);
   ui.cancelDeleteButton.addEventListener('click', closeDelete);
   ui.confirmDeleteButton.addEventListener('click', confirmDelete);
+  ui.cancelEditUnlockButton.addEventListener('click', closeEditUnlock);
+  ui.confirmEditUnlockButton.addEventListener('click', confirmEditUnlock);
   ui.cancelPinButton.addEventListener('click', closePin);
   ui.savePinButton.addEventListener('click', savePin);
 
@@ -699,8 +759,17 @@
 
   ui.deviceId.addEventListener('input', function () { ui.deviceId.value = normalizeDeviceId(ui.deviceId.value); });
   ui.deviceKey.addEventListener('input', function () { ui.deviceKey.value = normalizeDeviceKey(ui.deviceKey.value); });
+  ui.deviceKey.addEventListener('paste', function (event) {
+    var source = event.clipboardData || window.clipboardData;
+    var pasted = source && source.getData ? source.getData('text') : '';
+    if (pasted) {
+      event.preventDefault();
+      ui.deviceKey.value = normalizeDeviceKey(pasted);
+      ui.deviceKey.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+  });
   ui.stalkerMac.addEventListener('input', function () { ui.stalkerMac.value = normalizeMac(ui.stalkerMac.value); });
-  [ui.playlistPin, ui.deletePin, ui.currentPin, ui.newPin, ui.confirmNewPin].forEach(function (input) {
+  [ui.playlistPin, ui.deletePin, ui.editUnlockPin, ui.currentPin, ui.newPin, ui.confirmNewPin].forEach(function (input) {
     input.addEventListener('input', function () {
       input.value = String(input.value || '').replace(/\D/g, '').slice(0, 4);
     });
@@ -713,10 +782,12 @@
 
   ui.playlistModal.addEventListener('click', function (event) { if (event.target === ui.playlistModal) closePlaylistModal(); });
   ui.deleteModal.addEventListener('click', function (event) { if (event.target === ui.deleteModal) closeDelete(); });
+  ui.editUnlockModal.addEventListener('click', function (event) { if (event.target === ui.editUnlockModal) closeEditUnlock(); });
   ui.pinModal.addEventListener('click', function (event) { if (event.target === ui.pinModal) closePin(); });
   document.addEventListener('keydown', function (event) {
     if (event.key === 'Escape') {
       if (!ui.pinModal.classList.contains('hidden')) closePin();
+      else if (!ui.editUnlockModal.classList.contains('hidden')) closeEditUnlock();
       else if (!ui.deleteModal.classList.contains('hidden')) closeDelete();
       else if (!ui.playlistModal.classList.contains('hidden')) closePlaylistModal();
     }
@@ -728,6 +799,7 @@
         !ui.dashboardView.classList.contains('hidden') &&
         ui.playlistModal.classList.contains('hidden') &&
         ui.deleteModal.classList.contains('hidden') &&
+        ui.editUnlockModal.classList.contains('hidden') &&
         ui.pinModal.classList.contains('hidden')) {
       loadPlaylists(true);
     }
