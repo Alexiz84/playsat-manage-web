@@ -233,3 +233,77 @@ button:disabled { opacity: .55; cursor: wait; transform: none !important; }
     flex: 1;
   }
 }
+
+/* Stage 8N.5.4 — 16-language Web UI + login CAPTCHA */
+button, input, select { font: inherit; }
+.field select {
+  width: 100%;
+  min-height: 51px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.13);
+  background: rgba(3,6,17,.88);
+  color: var(--text);
+  padding: 0 15px;
+  cursor: pointer;
+}
+.field select:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.language-field { margin-bottom: 22px; }
+.captcha-panel {
+  margin: 4px 0 18px;
+  padding: 15px;
+  border-radius: 16px;
+  border: 1px solid rgba(32,200,255,.20);
+  background: rgba(32,200,255,.045);
+}
+.captcha-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.captcha-title { color: #dfe5f7; font-size: 13px; font-weight: 800; }
+.captcha-refresh { padding-inline: 0; white-space: nowrap; }
+.captcha-row {
+  display: grid;
+  grid-template-columns: minmax(168px, 1fr) minmax(150px, .85fr);
+  gap: 12px;
+  align-items: stretch;
+}
+.captcha-image-shell {
+  min-height: 72px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.12);
+  background: #060a1b;
+}
+.captcha-image { display: block; width: 100%; height: 72px; object-fit: contain; }
+.captcha-loading { color: var(--muted); font-size: 12px; padding: 10px; text-align: center; }
+.captcha-answer-field { margin: 0; align-content: center; }
+.captcha-answer-field input {
+  text-transform: uppercase;
+  letter-spacing: .32em;
+  font-size: 20px;
+  font-weight: 900;
+  text-align: center;
+}
+.captcha-help { margin: 9px 0 0; }
+
+html[dir="rtl"] body { direction: rtl; }
+html[dir="rtl"] .password-toggle { right: auto; left: 12px; }
+html[dir="rtl"] .password-wrap input { padding-right: 15px; padding-left: 72px; }
+html[dir="rtl"] .policy-strip span { text-align: left; }
+html[dir="rtl"] .detail-row { direction: rtl; }
+html[dir="rtl"] .detail-value { text-align: right; }
+html[dir="rtl"] .device-chip { direction: ltr; }
+html[dir="rtl"] input#deviceId,
+html[dir="rtl"] input#deviceKey,
+html[dir="rtl"] input#stalkerMac,
+html[dir="rtl"] input[type="url"] { direction: ltr; text-align: left; }
+
+@media (max-width: 560px) {
+  .captcha-row { grid-template-columns: 1fr; }
+  .captcha-image { height: 68px; }
+}
