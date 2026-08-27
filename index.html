@@ -8,7 +8,7 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self' https://proxy.playsattv.com; base-uri 'self'; form-action 'self'; frame-ancestors 'none';">
   <title>PlaySat TV — Manage Playlists</title>
   <link rel="icon" type="image/png" href="assets/playsat-logo.png">
-  <link rel="stylesheet" href="styles.css?v=8N5.4.1">
+  <link rel="stylesheet" href="styles.css?v=8N5.4.3">
 </head>
 <body>
   <div class="page-bg" aria-hidden="true"></div>
@@ -160,16 +160,16 @@
         <div id="xtreamFields" class="provider-fields">
           <label class="field">
             <span data-i18n="ps_playlist_server_url">Server URL</span>
-            <input id="xtreamServerUrl" type="url" maxlength="4096" autocomplete="off" placeholder="http://provider.example:8080" required>
+            <input id="xtreamServerUrl" type="url" maxlength="4096" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="http://provider.example:8080" required>
           </label>
           <div class="two-column">
             <label class="field">
               <span data-i18n="ps_playlist_username">Username</span>
-              <input id="xtreamUsername" type="text" maxlength="1024" autocomplete="off" spellcheck="false">
+              <input id="xtreamUsername" type="text" maxlength="1024" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
             </label>
             <label class="field">
               <span data-i18n="ps_playlist_password">Password</span>
-              <input id="xtreamPassword" type="password" maxlength="1024" autocomplete="off" spellcheck="false">
+              <input id="xtreamPassword" type="text" maxlength="1024" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
             </label>
           </div>
         </div>
@@ -278,6 +278,6 @@
     </section>
   </div>
 
-  <script src="app.js?v=8N5.4.1" defer></script>
+  <script src="app.js?v=8N5.4.3" defer></script>
 </body>
 </html>
