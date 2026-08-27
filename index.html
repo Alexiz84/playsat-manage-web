@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -16,44 +16,84 @@
 
   <main class="shell">
     <header class="topbar">
-      <a class="brand" href="#" id="brandHome" aria-label="PlaySat TV Manage Playlists">
+      <a class="brand" href="#" id="brandHome" data-i18n-aria="brandAria" aria-label="PlaySat TV Manage Playlists">
         <img class="brand-logo" src="assets/playsat-logo.png" alt="PlaySat TV">
         <span class="brand-copy">
           <strong>PlaySat TV</strong>
-          <span>Manage Playlists</span>
+          <span data-i18n="ps_playlist_title">Playlists</span>
         </span>
       </a>
-      <button class="ghost-button hidden" id="logoutButton" type="button">Log out</button>
+      <button class="ghost-button hidden" id="logoutButton" type="button" data-i18n="logout">Log out</button>
     </header>
 
     <section id="loginView" class="view login-view" aria-labelledby="loginTitle">
       <div class="login-card glass-card">
-        <div class="eyebrow">PLAYLIST MANAGEMENT</div>
-        <h1 id="loginTitle">Manage your own playlists</h1>
-        <p class="lead">Connect to your PlaySat TV device with the Device ID and Device Key shown in the app.</p>
+        <div class="eyebrow" data-i18n="ps_web_title">Manage Playlists from Web</div>
+        <h1 id="loginTitle" data-i18n="ps_web_title">Manage Playlists from Web</h1>
+        <p class="lead" data-i18n="ps_web_use_identity">Use your Device ID and Device Key to manage playlists from the web.</p>
+
+        <label class="field language-field">
+          <span data-i18n="ps_settings_language">Language</span>
+          <select id="languageSelect" data-i18n-aria="ps_settings_language" aria-label="Language">
+            <option value="en">English</option>
+            <option value="es">Español</option>
+            <option value="fr">Français</option>
+            <option value="de">Deutsch</option>
+            <option value="it">Italiano</option>
+            <option value="ar">العربية</option>
+            <option value="pt">Português</option>
+            <option value="ru">Русский</option>
+            <option value="tr">Türkçe</option>
+            <option value="zh-CN">简体中文</option>
+            <option value="ja">日本語</option>
+            <option value="ko">한국어</option>
+            <option value="hi">हिन्दी</option>
+            <option value="sv">Svenska</option>
+            <option value="fi">Suomi</option>
+            <option value="pl">Polski</option>
+          </select>
+        </label>
 
         <form id="loginForm" novalidate>
           <label class="field">
-            <span>Device ID</span>
+            <span data-i18n="ps_web_device_id">Device ID</span>
             <input id="deviceId" name="deviceId" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="17" placeholder="92:14:2B:6E:9B:58" required>
           </label>
 
           <label class="field">
-            <span>Device Key</span>
+            <span data-i18n="ps_web_device_key">Device Key</span>
             <span class="password-wrap">
-              <input id="deviceKey" name="deviceKey" type="password" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="8" placeholder="8 characters" required>
-              <button id="toggleDeviceKey" class="text-button password-toggle" type="button" aria-label="Show Device Key">Show</button>
+              <input id="deviceKey" name="deviceKey" type="password" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="8" data-i18n-placeholder="deviceKeyPlaceholder" placeholder="8 characters" required>
+              <button id="toggleDeviceKey" class="text-button password-toggle" type="button" data-i18n="show" data-i18n-aria="showDeviceKey">Show</button>
             </span>
           </label>
 
+          <div class="captcha-panel" aria-live="polite">
+            <div class="captcha-head">
+              <span class="captcha-title" data-i18n="captchaTitle">Security check</span>
+              <button id="refreshCaptchaButton" class="text-button captcha-refresh" type="button" data-i18n="captchaRefresh">Refresh Captcha</button>
+            </div>
+            <div class="captcha-row">
+              <div class="captcha-image-shell">
+                <div id="captchaLoading" class="captcha-loading" data-i18n="captchaLoading">Loading CAPTCHA…</div>
+                <img id="captchaImage" class="captcha-image hidden" alt="CAPTCHA" data-i18n-aria="captchaImageAlt">
+              </div>
+              <label class="field captcha-answer-field">
+                <span data-i18n="captchaAnswer">CAPTCHA</span>
+                <input id="captchaAnswer" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="3" data-i18n-placeholder="captchaPlaceholder" placeholder="3 characters" required>
+              </label>
+            </div>
+            <p class="field-help captcha-help" data-i18n="captchaHelp">Enter the 3 characters shown in the image.</p>
+          </div>
+
           <div id="loginError" class="message error-message hidden" role="alert"></div>
-          <button id="loginButton" class="primary-button wide" type="submit">Connect to device</button>
+          <button id="loginButton" class="primary-button wide" type="submit" data-i18n="ps_playlist_connect">Connect</button>
         </form>
 
         <div class="info-panel">
-          <strong>PlaySat TV is a media player.</strong>
-          <p>Use this page only to add and manage your own Xtream Codes, M3U or Stalker Portal playlist details for your PlaySat TV device.</p>
-          <p>PlaySat does not provide, sell or distribute IPTV subscriptions, playlists, channels or media content.</p>
+          <strong>PlaySat TV</strong>
+          <p data-i18n="ps_terms_full_p1">PlaySat TV does not provide any media content, channels, movies, series, or pre-made playlists. The app is a neutral media player that can only play streams and playlists supplied by the user.</p>
+          <p data-i18n="ps_terms_full_p3">The developer/provider of PlaySat TV never sells, offers, or promotes any ready-made playlists, channels, movies, or other media content. Any third-party playlists are outside our control and knowledge.</p>
         </div>
       </div>
     </section>
@@ -61,13 +101,13 @@
     <section id="dashboardView" class="view dashboard-view hidden" aria-labelledby="dashboardTitle">
       <div class="dashboard-head">
         <div>
-          <div class="eyebrow">CONNECTED DEVICE</div>
-          <h1 id="dashboardTitle">Your playlists</h1>
+          <div class="eyebrow" data-i18n="ps_web_title">Manage Playlists from Web</div>
+          <h1 id="dashboardTitle" data-i18n="ps_playlist_title">Playlists</h1>
           <div class="device-chip" id="connectedDeviceId"></div>
         </div>
         <div class="dashboard-actions">
-          <button id="refreshPlaylistsButton" class="ghost-button" type="button">↻ Refresh</button>
-          <button id="addPlaylistButton" class="primary-button" type="button">+ Add playlist</button>
+          <button id="refreshPlaylistsButton" class="ghost-button" type="button"><span aria-hidden="true">↻ </span><span data-i18n="ps_common_refresh">Refresh</span></button>
+          <button id="addPlaylistButton" class="primary-button" type="button"><span aria-hidden="true">+ </span><span data-i18n="ps_playlist_add_title">Add playlist</span></button>
         </div>
       </div>
 
@@ -76,21 +116,21 @@
 
       <div id="loadingState" class="state-card glass-card hidden">
         <div class="spinner" aria-hidden="true"></div>
-        <p>Loading playlists…</p>
+        <p data-i18n="ps_playlist_loading">Loading playlists</p>
       </div>
 
       <div id="emptyState" class="state-card glass-card hidden">
         <div class="empty-icon">＋</div>
-        <h2>No playlists added yet</h2>
-        <p>Add your own Xtream Codes, M3U or Stalker Portal details. They will be ready for PlaySat TV device sync.</p>
-        <button id="emptyAddButton" class="secondary-button" type="button">Add your first playlist</button>
+        <h2 data-i18n="ps_playlist_first_title">Add your first playlist</h2>
+        <p data-i18n="ps_playlist_first_choose">Choose how you want to add your playlist</p>
+        <button id="emptyAddButton" class="secondary-button" type="button" data-i18n="ps_playlist_add_title">Add playlist</button>
       </div>
 
       <div id="playlistGrid" class="playlist-grid" aria-live="polite"></div>
 
       <div class="policy-strip glass-card">
-        <strong>Your playlists. Your provider. Your device.</strong>
-        <span>PlaySat only transfers playlist information entered by you to your own PlaySat TV device.</span>
+        <strong>PlaySat TV</strong>
+        <span data-i18n="ps_terms_full_ul2_1">All content played in the app is loaded by the user via their own links, M3U playlists, or other access information.</span>
       </div>
     </section>
   </main>
@@ -99,36 +139,36 @@
     <section class="modal-card glass-card" role="dialog" aria-modal="true" aria-labelledby="playlistModalTitle">
       <div class="modal-head">
         <div>
-          <div class="eyebrow" id="playlistModalEyebrow">ADD PLAYLIST</div>
-          <h2 id="playlistModalTitle">Add playlist</h2>
+          <div class="eyebrow" id="playlistModalEyebrow" data-i18n="ps_playlist_add_title">Add playlist</div>
+          <h2 id="playlistModalTitle" data-i18n="ps_playlist_add_title">Add playlist</h2>
         </div>
-        <button id="closePlaylistModal" class="icon-button" type="button" aria-label="Close">×</button>
+        <button id="closePlaylistModal" class="icon-button" type="button" data-i18n-aria="ps_common_close" aria-label="Close">×</button>
       </div>
 
-      <div class="type-selector" role="tablist" aria-label="Playlist type">
-        <button type="button" class="type-button active" data-type="xtream" role="tab">Xtream Codes</button>
-        <button type="button" class="type-button" data-type="m3u" role="tab">M3U</button>
-        <button type="button" class="type-button" data-type="stalker" role="tab">Stalker Portal</button>
+      <div class="type-selector" role="tablist" data-i18n-aria="ps_playlist_choose_type" aria-label="Choose playlist type">
+        <button type="button" class="type-button active" data-type="xtream" role="tab" data-i18n="ps_playlist_xtream">Xtream Codes</button>
+        <button type="button" class="type-button" data-type="m3u" role="tab" data-i18n="ps_playlist_m3u">M3U Playlist</button>
+        <button type="button" class="type-button" data-type="stalker" role="tab" data-i18n="ps_playlist_stalker">Stalker Portal</button>
       </div>
 
       <form id="playlistForm" novalidate>
         <label class="field">
-          <span>Playlist name</span>
-          <input id="playlistName" type="text" maxlength="120" autocomplete="off" placeholder="My Playlist" required>
+          <span data-i18n="ps_playlist_name">Playlist name</span>
+          <input id="playlistName" type="text" maxlength="120" autocomplete="off" data-i18n-placeholder="playlistNamePlaceholder" placeholder="My Playlist" required>
         </label>
 
         <div id="xtreamFields" class="provider-fields">
           <label class="field">
-            <span>Server URL</span>
+            <span data-i18n="ps_playlist_server_url">Server URL</span>
             <input id="xtreamServerUrl" type="url" maxlength="4096" autocomplete="off" placeholder="http://provider.example:8080" required>
           </label>
           <div class="two-column">
             <label class="field">
-              <span>Username</span>
+              <span data-i18n="ps_playlist_username">Username</span>
               <input id="xtreamUsername" type="text" maxlength="1024" autocomplete="off" spellcheck="false">
             </label>
             <label class="field">
-              <span>Password</span>
+              <span data-i18n="ps_playlist_password">Password</span>
               <input id="xtreamPassword" type="password" maxlength="1024" autocomplete="off" spellcheck="false">
             </label>
           </div>
@@ -136,40 +176,44 @@
 
         <div id="m3uFields" class="provider-fields hidden">
           <label class="field">
-            <span>M3U URL</span>
+            <span data-i18n="ps_playlist_m3u_url">M3U URL</span>
             <input id="m3uUrl" type="url" maxlength="4096" autocomplete="off" spellcheck="false" placeholder="https://provider.example/playlist.m3u">
           </label>
           <label class="field">
-            <span>EPG URL <small>optional</small></span>
+            <span data-i18n="ps_playlist_epg_optional">EPG URL (optional)</span>
             <input id="m3uEpgUrl" type="url" maxlength="4096" autocomplete="off" spellcheck="false" placeholder="https://provider.example/epg.xml">
           </label>
         </div>
 
         <div id="stalkerFields" class="provider-fields hidden">
           <label class="field">
-            <span>Portal URL</span>
+            <span data-i18n="ps_playlist_portal_url">Portal URL</span>
             <input id="stalkerPortalUrl" type="url" maxlength="4096" autocomplete="off" spellcheck="false" placeholder="http://provider.example:8080/c">
           </label>
           <label class="field">
-            <span>MAC Address</span>
+            <span data-i18n="ps_playlist_mac_address">MAC Address</span>
             <span class="inline-input-actions">
               <input id="stalkerMac" type="text" maxlength="17" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="00:1A:79:XX:XX:XX">
-              <button id="generateStalkerMac" class="secondary-button compact" type="button">Generate</button>
+              <button id="generateStalkerMac" class="secondary-button compact" type="button" data-i18n="ps_playlist_generate_mac">Generate new MAC</button>
             </span>
           </label>
-          <p class="field-help">Use the MAC registered with your own Stalker provider. A generated MAC remains part of this playlist after it is saved.</p>
+          <p class="field-help" data-i18n="ps_playlist_stalker_send_mac">Send this MAC to your provider. After it has been registered, enter the Portal URL and press Connect.</p>
         </div>
 
         <label id="playlistPinField" class="field pin-field">
-          <span id="playlistPinLabel">Web PIN <small>4 digits</small></span>
-          <input id="playlistPin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" placeholder="••••" required>
+          <span><span data-i18n="webPin">Web PIN</span> <small data-i18n="webPinOptional4">optional · 4 digits</small></span>
+          <input id="playlistPin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="new-password" placeholder="••••">
         </label>
-        <p class="field-help" id="playlistPinHelp">This PIN protects Edit and Delete on the web. It is separate from your Device Key.</p>
+        <label id="playlistPinConfirmField" class="field pin-field">
+          <span><span data-i18n="confirmWebPin">Confirm Web PIN</span> <small data-i18n="onlyIfPinUsed">only if PIN is used</small></span>
+          <input id="playlistPinConfirm" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="new-password" placeholder="••••">
+        </label>
+        <p class="field-help" id="playlistPinHelp" data-i18n="pinHelp">Optional. Leave both PIN fields empty for no web protection. If you use a PIN, enter the same 4 digits twice. A protected playlist hides provider details and requires the PIN for Edit and Delete.</p>
 
         <div id="playlistFormError" class="message error-message hidden" role="alert"></div>
         <div class="modal-actions">
-          <button id="cancelPlaylistButton" class="ghost-button" type="button">Cancel</button>
-          <button id="savePlaylistButton" class="primary-button" type="submit">Save playlist</button>
+          <button id="cancelPlaylistButton" class="ghost-button" type="button" data-i18n="ps_common_cancel">Cancel</button>
+          <button id="savePlaylistButton" class="primary-button" type="submit" data-i18n="ps_common_save">Save</button>
         </div>
       </form>
     </section>
@@ -178,64 +222,63 @@
   <div id="deleteModal" class="modal-backdrop hidden" role="presentation">
     <section class="confirm-card glass-card" role="dialog" aria-modal="true" aria-labelledby="deleteTitle">
       <div class="danger-dot">!</div>
-      <h2 id="deleteTitle">Delete playlist?</h2>
-      <p id="deleteText">This removes the playlist from Web Manager and from the synced PlaySat app.</p>
-      <label class="field">
-        <span>Web PIN</span>
-        <input id="deletePin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" placeholder="4 digits">
+      <h2 id="deleteTitle" data-i18n="ps_playlist_delete_title">Delete playlist</h2>
+      <p id="deleteText" data-i18n="ps_playlist_delete_confirm">Are you sure you want to delete this playlist?</p>
+      <label id="deletePinField" class="field">
+        <span data-i18n="webPin">Web PIN</span>
+        <input id="deletePin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" data-i18n-placeholder="fourDigits" placeholder="4 digits">
       </label>
       <div id="deleteError" class="message error-message hidden" role="alert"></div>
       <div class="modal-actions centered">
-        <button id="cancelDeleteButton" class="ghost-button" type="button">Cancel</button>
-        <button id="confirmDeleteButton" class="danger-button" type="button">Delete</button>
+        <button id="cancelDeleteButton" class="ghost-button" type="button" data-i18n="ps_common_cancel">Cancel</button>
+        <button id="confirmDeleteButton" class="danger-button" type="button" data-i18n="ps_common_delete">Delete</button>
       </div>
     </section>
   </div>
 
-
   <div id="editUnlockModal" class="modal-backdrop hidden" role="presentation">
     <section class="confirm-card glass-card" role="dialog" aria-modal="true" aria-labelledby="editUnlockTitle">
-      <div class="eyebrow">PROTECTED PLAYLIST</div>
-      <h2 id="editUnlockTitle">Unlock to edit</h2>
-      <p>Enter the playlist Web PIN before its provider details are revealed.</p>
+      <div class="eyebrow" data-i18n="protectedPlaylist">Protected playlist</div>
+      <h2 id="editUnlockTitle" data-i18n="unlockToEdit">Unlock to edit</h2>
+      <p data-i18n="unlockHelp">Enter the playlist Web PIN before its provider details are revealed.</p>
       <label class="field">
-        <span>Web PIN</span>
+        <span data-i18n="webPin">Web PIN</span>
         <input id="editUnlockPin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" placeholder="••••">
       </label>
       <div id="editUnlockError" class="message error-message hidden" role="alert"></div>
       <div class="modal-actions centered">
-        <button id="cancelEditUnlockButton" class="ghost-button" type="button">Cancel</button>
-        <button id="confirmEditUnlockButton" class="primary-button" type="button">Unlock</button>
+        <button id="cancelEditUnlockButton" class="ghost-button" type="button" data-i18n="ps_common_cancel">Cancel</button>
+        <button id="confirmEditUnlockButton" class="primary-button" type="button" data-i18n="unlock">Unlock</button>
       </div>
     </section>
   </div>
 
-
   <div id="pinModal" class="modal-backdrop hidden" role="presentation">
     <section class="confirm-card glass-card" role="dialog" aria-modal="true" aria-labelledby="pinTitle">
-      <div class="eyebrow">WEB PROTECTION</div>
-      <h2 id="pinTitle">Set Web PIN</h2>
-      <p id="pinText">Choose a 4-digit PIN for this playlist.</p>
+      <div class="eyebrow" data-i18n="webProtection">Web protection</div>
+      <h2 id="pinTitle" data-i18n="setWebPin">Set Web PIN</h2>
+      <p id="pinText" data-i18n="choosePinDefault">Choose a 4-digit PIN for this playlist.</p>
       <label id="currentPinField" class="field hidden">
-        <span>Current PIN</span>
+        <span data-i18n="currentPin">Current PIN</span>
         <input id="currentPin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" placeholder="••••">
       </label>
       <label class="field">
-        <span>New PIN</span>
+        <span data-i18n="newPin">New PIN</span>
         <input id="newPin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" placeholder="••••">
       </label>
       <label class="field">
-        <span>Confirm new PIN</span>
+        <span data-i18n="confirmNewPin">Confirm new PIN</span>
         <input id="confirmNewPin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" placeholder="••••">
       </label>
       <div id="pinError" class="message error-message hidden" role="alert"></div>
       <div class="modal-actions centered">
-        <button id="cancelPinButton" class="ghost-button" type="button">Cancel</button>
-        <button id="savePinButton" class="primary-button" type="button">Save PIN</button>
+        <button id="cancelPinButton" class="ghost-button" type="button" data-i18n="ps_common_cancel">Cancel</button>
+        <button id="savePinButton" class="primary-button" type="button" data-i18n="savePin">Save PIN</button>
       </div>
     </section>
   </div>
 
+  <script src="i18n.js" defer></script>
   <script src="app.js" defer></script>
 </body>
 </html>
